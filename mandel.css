@@ -45,7 +45,8 @@ span.info-left {
 
 }
 
-span.info-right {
+span.info-right,
+span.comment {
     font-size: 9pt;
     /* display: inline-block;
     width: 70px; */
