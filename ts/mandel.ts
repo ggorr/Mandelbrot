@@ -1,7 +1,6 @@
 let unit: number, minX: number, maxX: number, minY: number, maxY: number;
-let offset = 10;
 
-function setView(): void {
+const setView = (): void => {
     unit = parseFloat((document.getElementById('unit') as HTMLInputElement).value);
     minX = parseFloat((document.getElementById('min-x') as HTMLInputElement).value);
     maxX = parseFloat((document.getElementById('max-x') as HTMLInputElement).value);
@@ -10,16 +9,16 @@ function setView(): void {
     (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${Math.round((maxX - minX) * unit)}, ${Math.round((maxY - minY) * unit)})`;
 }
 
-function trunc(x: number): number {
+const trunc = (x: number): number => {
     return Math.round(x * 10000000000) / 10000000000;
 }
-function setXy(x: number, y: number): void {
-    (document.getElementById('xy') as HTMLSpanElement).innerHTML = `(${trunc(minX + (x - offset) / unit)}, ${trunc(maxY - (y - offset) / unit)})`;
+const setXy = (x: number, y: number): void => {
+    (document.getElementById('xy') as HTMLSpanElement).innerHTML = `(${trunc(minX + x / unit)}, ${trunc(maxY - y / unit)})`;
 }
 
-function centerTo(canvasX: number, canvasY: number): void {
-    let x = minX + (canvasX - offset) / unit;
-    let y = maxY - (canvasY - offset) / unit;
+const centerTo = (canvasX: number, canvasY: number): void => {
+    let x = minX + canvasX / unit;
+    let y = maxY - canvasY / unit;
     let sx = x - (minX + maxX) / 2;
     minX += sx;
     maxX += sx;
@@ -33,7 +32,7 @@ function centerTo(canvasX: number, canvasY: number): void {
     setView(); // test
 }
 
-function expand(factor: number): void {
+const expand = (factor: number): void => {
     unit *= factor;
     let t = minX;
     minX = ((factor + 1) * t + (factor - 1) * maxX) / (2 * factor);
@@ -52,7 +51,7 @@ function expand(factor: number): void {
 let worker: Worker | null = null;
 let interval: number;
 
-function display(): void {
+const display = (): void => {
     if (worker != null)
         return;
     worker = new Worker("./js/worker.js", { type: 'module' });
@@ -71,7 +70,7 @@ function display(): void {
     worker.onmessage = (ev) => {
         for (let i = 0; i < ev.data.length; i++)
             image.data[pos++] = ev.data[i];
-        context.putImageData(image, offset, offset);
+        context.putImageData(image, 0, 0);
         if (pos == 4 * width * height)
             stopDisplay();
     }
@@ -84,7 +83,7 @@ function display(): void {
     }, 100);
 }
 
-function stopDisplay() {
+const stopDisplay = () => {
     if (worker == null)
         return;
     clearInterval(interval);
@@ -92,4 +91,17 @@ function stopDisplay() {
     worker = null;
 }
 
-export { setView, setXy, centerTo, expand, display, stopDisplay };
+const downloadPng = () => {
+    // download
+    let canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    canvas.toBlob((blob) => {
+        if (blob != null) {
+            let link = document.createElement("a");
+            link.download = (document.getElementById('filename') as HTMLInputElement).value;
+            link.href = window.URL.createObjectURL(blob);
+            link.click();
+        }
+    }, 'image/png');
+}
+
+export { setView, setXy, centerTo, expand, display, stopDisplay, downloadPng };
