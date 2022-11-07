@@ -1,6 +1,6 @@
 import { centerTo, expand, display } from './mandel.js';
 let div = document.createElement('div');
-function createContextmenu() {
+const createContextmenu = () => {
     let menus = [
         ['cm-center', 'translate to center', 0],
         ['cm-expand-1/4', 'expand 1/4 at center', 0.25],
@@ -29,9 +29,9 @@ function createContextmenu() {
             });
     });
     document.body.appendChild(div);
-}
+};
 let listener = null;
-function showContextmenu(pageX, pageY, canvasX, canvasY) {
+const showContextmenu = (pageX, pageY, canvasX, canvasY) => {
     div.style.display = 'block';
     div.style.left = pageX + 'px';
     div.style.top = pageY + 'px';
@@ -44,8 +44,8 @@ function showContextmenu(pageX, pageY, canvasX, canvasY) {
         display();
     };
     menu === null || menu === void 0 ? void 0 : menu.addEventListener('click', listener);
-}
-function hideContextmenu() {
+};
+const hideContextmenu = () => {
     div.style.display = 'none';
-}
+};
 export { createContextmenu, showContextmenu, hideContextmenu };
