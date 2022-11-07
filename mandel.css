@@ -20,6 +20,7 @@ body {
 
 .right {
     float: left;
+    margin: 10px 0 0 10px;
 }
 
 h2#title {
@@ -62,13 +63,17 @@ span.info-right {
     width: 100px;
 }
 
+#filename {
+    width: 100px;
+}
+
 #contextmenu {
     display: none;
     position: fixed;
     padding: 3px 5px 3px 5px;
     background-color: #666;
     /* box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.54); */
-    border:3px solid #333;
+    border: 3px solid #333;
 }
 
 .menu {
