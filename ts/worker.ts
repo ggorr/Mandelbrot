@@ -1,4 +1,4 @@
-onmessage = function (e: MessageEvent) {
+onmessage = (e: MessageEvent) => {
     let colorUnit = 0xFFFFFF / e.data.iter;
     let line: number[] = Array(4 * e.data.width);
     let u: number[] = Array<number>(e.data.width);
@@ -18,7 +18,7 @@ onmessage = function (e: MessageEvent) {
     }
 }
 
-function mandelbrot(u: number, v: number, iter: number): number {
+const mandelbrot = (u: number, v: number, iter: number): number => {
     let x = 0;
     let y = 0;
     let x2 = 0;
