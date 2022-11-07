@@ -3,7 +3,7 @@ import { centerTo, expand, display } from './mandel.js';
 
 let div = document.createElement('div') as HTMLDivElement;
 
-function createContextmenu(): void {
+const createContextmenu = (): void => {
     let menus: [string, string, number][] = [
         ['cm-center', 'translate to center', 0],
         ['cm-expand-1/4', 'expand 1/4 at center', 0.25],
@@ -33,11 +33,11 @@ function createContextmenu(): void {
             });
     });
     document.body.appendChild(div);
-}
+};
 
-let listener:EventListener | null = null;
+let listener: EventListener | null = null;
 
-function showContextmenu(pageX: number, pageY: number, canvasX: number, canvasY: number) {
+const showContextmenu = (pageX: number, pageY: number, canvasX: number, canvasY: number): void => {
     div.style.display = 'block';
     div.style.left = pageX + 'px';
     div.style.top = pageY + 'px';
@@ -52,7 +52,7 @@ function showContextmenu(pageX: number, pageY: number, canvasX: number, canvasY:
     menu?.addEventListener('click', listener);
 }
 
-function hideContextmenu() : void {
+const hideContextmenu = (): void => {
     div.style.display = 'none';
 }
 
