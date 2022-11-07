@@ -1,5 +1,5 @@
 "use strict";
-onmessage = function (e) {
+onmessage = (e) => {
     let colorUnit = 0xFFFFFF / e.data.iter;
     let line = Array(4 * e.data.width);
     let u = Array(e.data.width);
@@ -18,7 +18,7 @@ onmessage = function (e) {
         postMessage(line);
     }
 };
-function mandelbrot(u, v, iter) {
+const mandelbrot = (u, v, iter) => {
     let x = 0;
     let y = 0;
     let x2 = 0;
@@ -31,4 +31,4 @@ function mandelbrot(u, v, iter) {
         y2 = y * y;
     }
     return n;
-}
+};
