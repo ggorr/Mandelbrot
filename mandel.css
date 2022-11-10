@@ -59,6 +59,11 @@ span.comment {
     margin: 5px 0px 5px 0px;
 }
 
+.color-model {
+    font-size: 11pt;
+    padding-top: 2px;
+}
+
 #display,
 #stop {
     width: 100px;
