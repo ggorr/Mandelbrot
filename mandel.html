@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="ko-KR" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" href="mandel.ico"><title>Mandelbrot set</title><link rel="stylesheet" href="mandel.css"><script type="module">'use strict';
-import { setView, setXy, display, stopDisplay, downloadPng } from './js/mandel.js'
+import { setView, setXy, display, stopDisplay, downloadPng, downloadPng0 } from './js/mandel.js'
 import * as ui from './js/ui.js'
 
 document.getElementById('min-x').addEventListener('input', setView);
@@ -9,10 +9,29 @@ document.getElementById('max-y').addEventListener('input', setView);
 document.getElementById('unit').addEventListener('input', setView);
 document.getElementById('unit').addEventListener('keydown', (e) => { if (e.keyCode == 13) display(); });
 document.getElementById('iter').addEventListener('keydown', (e) => { if (e.keyCode == 13) display(); });
-document.getElementById('display').addEventListener('click', display);
+document.getElementById('display').addEventListener('click', () => {
+	if (document.getElementById('rgb').checked) 
+		display('rgb');
+	else if (document.getElementById('rgb').checked) 
+		display('hsv');
+	else
+		display('hsl');
+});
 document.getElementById('stop').addEventListener('click', stopDisplay);
-document.getElementById('download').addEventListener('click', downloadPng);
-document.getElementById('filename').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng(); });
+document.getElementById('download').addEventListener('click', (e) => downloadPng('none'));
+document.getElementById('filename').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('none'); });
+//- document.getElementById('download1').addEventListener('click', (e) => downloadPng('sub'));
+//- document.getElementById('filename1').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('sub'); });
+//- document.getElementById('download2').addEventListener('click', (e) => downloadPng('up'));
+//- document.getElementById('filename2').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('up'); });
+//- document.getElementById('download3').addEventListener('click', (e) => downloadPng('average'));
+//- document.getElementById('filename3').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('average'); });
+//- document.getElementById('download4').addEventListener('click', (e) => downloadPng('paeth'));
+//- document.getElementById('filename4').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('paeth'); });
+//- document.getElementById('download5').addEventListener('click', (e) => downloadPng('min sum'));
+//- document.getElementById('filename5').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('min sum'); });
+//- document.getElementById('download0').addEventListener('click', downloadPng0);
+//- document.getElementById('filename0').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng0(); });
 
 document.getElementById('canvas').addEventListener('mousemove', e => setXy(e.offsetX, e.offsetY));
 document.getElementById('canvas').addEventListener("contextmenu", e => {
@@ -25,4 +44,4 @@ window.onload = () => {
 	ui.createContextmenu();
 	document.getElementById('display').click();
 };
-window.onclick = ui.hideContextmenu;</script></head><body><div class="left" id="left"><h2 id="title">Mandelbrot set</h2><label class="factor" for="min-x">x:</label>&nbsp;<input class="factor" id="min-x" value="-2.1" title="min x" required>&nbsp;<input class="factor" id="max-x" value="1.1" title="max x" required><br><label class="factor" for="min-y">y:</label>&nbsp;<input class="factor" id="min-y" value="-1.5" title="min y" required>&nbsp;<input class="factor" id="max-y" value="1.5" title="max y" required><br><label class="factor" for="unit">unit:</label>&nbsp;<input class="factor" id="unit" value="100" title="px" required>&nbsp;<span class="comment">&larr; expand</span><br><label class="factor" for="iter">iter:</label>&nbsp;<input class="factor" id="iter" value="1000" required>&nbsp;<span class="comment">&larr; x 10</span><br><div class="container"><button id="stop">Stop</button>&nbsp;<button id="display">Display</button></div><span class="info-left">view:</span>&nbsp;<span class="info-right" id="view" title="(width, height) as px"></span><br><span class="info-left">(x, y):</span>&nbsp;<span class="info-right" id="xy"></span><br><span class="info-left">time:</span>&nbsp;<span class="info-right" id="time"></span><br><div class="container"><input id="filename" value="noname.png">&nbsp;<button id="download">Download PNG</button></div><div class="container"><p>by K. Park<br>ggorr.kp@gmail.com</p></div></div><div class="right" id="right"><canvas id="canvas" title="right click for menu"></canvas></div></body></html>
+window.onclick = ui.hideContextmenu;</script></head><body><div class="left" id="left"><h2 id="title">Mandelbrot set</h2><label class="factor" for="min-x">x:</label>&nbsp;<input class="factor" id="min-x" value="-2.1" title="min x" required>&nbsp;<input class="factor" id="max-x" value="1.1" title="max x" required><br><label class="factor" for="min-y">y:</label>&nbsp;<input class="factor" id="min-y" value="-1.5" title="min y" required>&nbsp;<input class="factor" id="max-y" value="1.5" title="max y" required><br><label class="factor" for="unit">unit:</label>&nbsp;<input class="factor" id="unit" value="100" title="px" required>&nbsp;<span class="comment">&larr; expand</span><br><label class="factor" for="iter">iter:</label>&nbsp;<input class="factor" id="iter" value="1000" required>&nbsp;<span class="comment">&larr; x 10</span><br><div class="container"> <input class="color-model" id="rgb" type="radio" name="color-model"><label class="color-model" for="rgb">RGB </label>&nbsp;<input class="color-model" id="hsv" type="radio" name="color-model"><label class="color-model" for="hsv">HSV </label>&nbsp;<input class="color-model" id="hsl" type="radio" name="color-model" checked><label class="color-model" for="hsl">HSL </label></div><div class="container"><button id="stop">Stop</button>&nbsp;<button id="display">Display</button></div><span class="info-left">view:</span>&nbsp;<span class="info-right" id="view" title="(width, height) as px"></span><br><span class="info-left">(x, y):</span>&nbsp;<span class="info-right" id="xy"></span><br><span class="info-left">time:</span>&nbsp;<span class="info-right" id="time"></span><br><div class="container"><input id="filename" value="noname.png">&nbsp;<button id="download">Download PNG</button></div><div class="container"><p>by K. Park<br>ggorr.kp@gmail.com</p></div></div><div class="right" id="right"><canvas id="canvas" title="right click for menu"></canvas></div></body></html>
