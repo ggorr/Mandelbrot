@@ -1,3 +1,4 @@
+import toPng from './png/png.js';
 let unit, minX, maxX, minY, maxY;
 const setView = () => {
     unit = parseFloat(document.getElementById('unit').value);
@@ -45,7 +46,12 @@ const expand = (factor) => {
 };
 let worker = null;
 let interval;
-const display = () => {
+let image;
+let color;
+// color: 'rgb' | 'hsv' | undefined
+const display = (colorModel = undefined) => {
+    if (colorModel != undefined)
+        color = colorModel;
     if (worker != null)
         return;
     worker = new Worker("./js/worker.js", { type: 'module' });
@@ -56,16 +62,17 @@ const display = () => {
     let height = Math.round((maxY - minY) * unit);
     canvas.width = width;
     canvas.height = height;
-    let image = context.createImageData(width, height);
+    // let image: ImageData = context.createImageData(width, height);
+    image = context.createImageData(width, height);
     let pos = 0;
     worker.onmessage = (ev) => {
-        for (let i = 0; i < ev.data.length; i++)
-            image.data[pos++] = ev.data[i];
+        image.data.set(ev.data, pos);
         context.putImageData(image, 0, 0);
+        pos += 4 * width;
         if (pos == 4 * width * height)
             stopDisplay();
     };
-    worker.postMessage({ width: width, height: height, minX: minX, maxY: maxY, unit: unit, iter: iter });
+    worker.postMessage({ width: width, height: height, minX: minX, maxY: maxY, unit: unit, iter: iter, color: color });
     let timeCount = 0;
     interval = setInterval(() => {
         timeCount++;
@@ -79,7 +86,7 @@ const stopDisplay = () => {
     worker.terminate();
     worker = null;
 };
-const downloadPng = () => {
+const downloadPng0 = () => {
     // download
     let canvas = document.getElementById('canvas');
     canvas.toBlob((blob) => {
@@ -91,4 +98,13 @@ const downloadPng = () => {
         }
     }, 'image/png');
 };
-export { setView, setXy, centerTo, expand, display, stopDisplay, downloadPng };
+const downloadPng = (pngFilter = 'none') => {
+    // download
+    let data = toPng(new Uint8Array(image.data.buffer), image.width, pngFilter);
+    let blob = new Blob([data], { type: 'image/png' });
+    let link = document.createElement("a");
+    link.download = document.getElementById('filename').value;
+    link.href = window.URL.createObjectURL(blob);
+    link.click();
+};
+export { setView, setXy, centerTo, expand, display, stopDisplay, downloadPng, downloadPng0 };
