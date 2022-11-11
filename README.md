@@ -30,4 +30,4 @@ for each pixel in canvas
     pixel color = (r, g, b) | (r, g, b, a);
 ```
 
-Visit github page <a href='https://ggorr.github.io/MandelbrotSet/mandel.html'>https://ggorr.github.io/MandelbrotSet/mandel.html</a>
+Visit github page <a href='https://ggorr.github.io/MandelbrotSet/'>https://ggorr.github.io/MandelbrotSet/</a>
