@@ -7,29 +7,22 @@ document.getElementById('max-x').addEventListener('input', setView);
 document.getElementById('min-y').addEventListener('input', setView);
 document.getElementById('max-y').addEventListener('input', setView);
 document.getElementById('unit').addEventListener('input', setView);
-let radios = ['rgb0', 'rgb1', 'rgb2', 'hsv0', 'hsv1', 'hsv2', 'hsl0', 'hsl1', 'hsl2'];
-radios.forEach(value => document.getElementById(value).addEventListener('click', () => display(value)));
+let radios = ['rgb0', 'rgb1', 'rgb2', 'hsv0', 'hsv1', 'hsv2', 'hsl0', 'hsl1', 'hsl2', 'rgb3', 'hsv3', 'hsl3'];
+radios.forEach(value => document.getElementById(value).addEventListener('click', () => display()));
 document.getElementById('unit').addEventListener('keydown', (e) => { if (e.keyCode == 13) display(); });
+let expands = {unit2:2, unit12:1/2, unit3:3, unit13:1/3, iter2:2, iter12:1/2, iter5:5, iter15:1/5};
+for (let id in expands) {
+	document.getElementById(id).addEventListener('click', () => {
+		let value = parseInt(document.getElementById(id.slice(0,4)).value);
+		document.getElementById(id.slice(0,4)).value = expands[id] * value;
+		display();
+	});
+}
 document.getElementById('iter').addEventListener('keydown', (e) => { if (e.keyCode == 13) display(); });
-document.getElementById('display').addEventListener('click', () => {
-	display(radios.find(v=>document.getElementById(v).checked));
-});
+document.getElementById('display').addEventListener('click', display);
 document.getElementById('stop').addEventListener('click', stopDisplay);
 document.getElementById('download').addEventListener('click', (e) => downloadPng('none'));
 document.getElementById('filename').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('none'); });
-//- document.getElementById('download1').addEventListener('click', (e) => downloadPng('sub'));
-//- document.getElementById('filename1').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('sub'); });
-//- document.getElementById('download2').addEventListener('click', (e) => downloadPng('up'));
-//- document.getElementById('filename2').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('up'); });
-//- document.getElementById('download3').addEventListener('click', (e) => downloadPng('average'));
-//- document.getElementById('filename3').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('average'); });
-//- document.getElementById('download4').addEventListener('click', (e) => downloadPng('paeth'));
-//- document.getElementById('filename4').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('paeth'); });
-//- document.getElementById('download5').addEventListener('click', (e) => downloadPng('min sum'));
-//- document.getElementById('filename5').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng('min sum'); });
-//- document.getElementById('download0').addEventListener('click', downloadPng0);
-//- document.getElementById('filename0').addEventListener('keydown', (e) => { if (e.keyCode == 13) downloadPng0(); });
-
 document.getElementById('canvas').addEventListener('mousemove', e => setXy(e.offsetX, e.offsetY));
 document.getElementById('canvas').addEventListener("contextmenu", e => {
 	e.preventDefault();
@@ -37,8 +30,7 @@ document.getElementById('canvas').addEventListener("contextmenu", e => {
 });
 
 window.onload = () => {
-	setView();
 	ui.createContextmenu();
-	document.getElementById('rgb0').click();
+	document.getElementById('rgb3').click();
 };
-window.onclick = ui.hideContextmenu;</script></head><body><div class="left" id="left"><h2 id="title">Mandelbrot set</h2><label class="factor" for="min-x">x:</label>&nbsp;<input class="factor" id="min-x" value="-2.1" title="min x" required>&nbsp;<input class="factor" id="max-x" value="1.1" title="max x" required><br><label class="factor" for="min-y">y:</label>&nbsp;<input class="factor" id="min-y" value="-1.5" title="min y" required>&nbsp;<input class="factor" id="max-y" value="1.5" title="max y" required><br><label class="factor" for="unit">unit:</label>&nbsp;<input class="factor" id="unit" value="100" title="px" required>&nbsp;<span class="comment">&larr; expand</span><br><label class="factor" for="iter">iter:</label>&nbsp;<input class="factor" id="iter" value="1000" required>&nbsp;<span class="comment">&larr; x 10</span><br><div class="container"> <input class="color-model" id="rgb0" type="radio" name="color-model"><label class="color-model" for="rgb0">RGB0</label>&nbsp;<input class="color-model" id="rgb1" type="radio" name="color-model"><label class="color-model" for="rgb1">RGB1</label>&nbsp;<input class="color-model" id="rgb2" type="radio" name="color-model"><label class="color-model" for="rgb2">RGB2</label>&nbsp;</div><div class="container"> <input class="color-model" id="hsv0" type="radio" name="color-model"><label class="color-model" for="hsv0">HSV0</label>&nbsp;<input class="color-model" id="hsv1" type="radio" name="color-model"><label class="color-model" for="hsv1">HSV1</label>&nbsp;<input class="color-model" id="hsv2" type="radio" name="color-model"><label class="color-model" for="hsv2">HSV2</label>&nbsp;</div><div class="container"> <input class="color-model" id="hsl0" type="radio" name="color-model"><label class="color-model" for="hsl0">HSL0</label>&nbsp;<input class="color-model" id="hsl1" type="radio" name="color-model"><label class="color-model" for="hsl1">HSL1</label>&nbsp;<input class="color-model" id="hsl2" type="radio" name="color-model"><label class="color-model" for="hsl2">HSL2</label>&nbsp;</div><div class="container"><button id="stop">Stop</button>&nbsp;<button id="display">Display</button></div><span class="info-left">view:</span>&nbsp;<span class="info-right" id="view" title="(width, height) as px"></span><br><span class="info-left">(x, y):</span>&nbsp;<span class="info-right" id="xy"></span><br><span class="info-left">time:</span>&nbsp;<span class="info-right" id="time"></span><br><div class="container"><input id="filename" value="noname.png">&nbsp;<button id="download">Download PNG</button></div><div class="container"><p>by K. Park<br>ggorr.kp@gmail.com</p></div></div><div class="right" id="right"><canvas id="canvas" title="right click for menu"></canvas></div></body></html>
+window.onclick = ui.hideContextmenu;</script></head><body><div class="left" id="left"><h2 id="title">Mandelbrot set</h2><label class="factor" for="min-x">x:</label>&nbsp;<input class="factor" id="min-x" value="-2.1" title="min x" required>&nbsp;<input class="factor" id="max-x" value="1.1" title="max x" required><br><label class="factor" for="min-y">y:</label>&nbsp;<input class="factor" id="min-y" value="-1.5" title="min y" required>&nbsp;<input class="factor" id="max-y" value="1.5" title="max y" required><br><label class="factor" for="unit">unit:</label>&nbsp;<input class="factor" id="unit" value="100" title="px" required>&nbsp;<button id="unit2">&#x00D7;2</button><button id="unit12">/2</button><button id="unit3">&#x00D7;3</button><button id="unit13">/3</button><br><label class="factor" for="iter">iter:</label>&nbsp;<input class="factor" id="iter" value="1000" required>&nbsp;<button id="iter2">&#x00D7;2</button><button id="iter12">/2</button><button id="iter5">&#x00D7;5</button><button id="iter15">/5</button><br><div class="container"><table><tr><td><input class="color-model" id="rgb0" type="radio" name="color-model"><label class="color-model" for="rgb0">RGB0</label>&nbsp;</td><td><input class="color-model" id="rgb1" type="radio" name="color-model"><label class="color-model" for="rgb1">RGB1</label>&nbsp;</td><td><input class="color-model" id="rgb2" type="radio" name="color-model"><label class="color-model" for="rgb2">RGB2</label>&nbsp;</td><td><input class="color-model" id="rgb3" type="radio" name="color-model"><label class="color-model" for="rgb3">RGB3</label>&nbsp;</td></tr><tr><td><input class="color-model" id="hsv0" type="radio" name="color-model"><label class="color-model" for="hsv0">HSV0</label>&nbsp;</td><td><input class="color-model" id="hsv1" type="radio" name="color-model"><label class="color-model" for="hsv1">HSV1</label>&nbsp;</td><td><input class="color-model" id="hsv2" type="radio" name="color-model"><label class="color-model" for="hsv2">HSV2</label>&nbsp;</td><td><input class="color-model" id="hsv3" type="radio" name="color-model"><label class="color-model" for="hsv3">HSV3</label>&nbsp;</td></tr><tr><td><input class="color-model" id="hsl0" type="radio" name="color-model"><label class="color-model" for="hsl0">HSL0</label>&nbsp;</td><td><input class="color-model" id="hsl1" type="radio" name="color-model"><label class="color-model" for="hsl1">HSL1</label>&nbsp;</td><td><input class="color-model" id="hsl2" type="radio" name="color-model"><label class="color-model" for="hsl2">HSL2</label>&nbsp;</td><td><input class="color-model" id="hsl3" type="radio" name="color-model"><label class="color-model" for="hsl3">HSL3</label>&nbsp;</td></tr></table></div><div class="container"><button id="stop">Stop</button>&nbsp;<button id="display">Display</button></div><span class="info-left">view:</span>&nbsp;<span class="info-right" id="view" title="(width, height) as px"></span><br><span class="info-left">(x, y):</span>&nbsp;<span class="info-right" id="xy"></span><br><span class="info-left">time:</span>&nbsp;<span class="info-right" id="time"></span><br><div class="container"><label class="invisible" for="filename">filename</label><input id="filename" value="noname.png">&nbsp;<button id="download">Download PNG</button></div><div class="container"><p>by K. Park<br>ggorr.kp@gmail.com</p></div></div><div class="right" id="right"><canvas id="canvas" title="right click for menu"></canvas></div></body></html>
