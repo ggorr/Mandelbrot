@@ -1,6 +1,13 @@
 import toPng from './png/png.js';
 
-let unit: number, minX: number, maxX: number, minY: number, maxY: number;
+let unit: number, minX: number, maxX: number, minY: number, maxY: number, coloring: string | undefined;
+
+const display = (): void => {
+    setView();
+    let radios = ['rgb0', 'rgb1', 'rgb2', 'rgb3', 'hsv0', 'hsv1', 'hsv2', 'hsv3', 'hsl0', 'hsl1', 'hsl2', 'hsl3'];
+    coloring = radios.find(v => (document.getElementById(v) as HTMLInputElement).checked);
+    showImage();
+}
 
 const setView = (): void => {
     unit = parseFloat((document.getElementById('unit') as HTMLInputElement).value);
@@ -8,12 +15,14 @@ const setView = (): void => {
     maxX = parseFloat((document.getElementById('max-x') as HTMLInputElement).value);
     minY = parseFloat((document.getElementById('min-y') as HTMLInputElement).value);
     maxY = parseFloat((document.getElementById('max-y') as HTMLInputElement).value);
-    (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${Math.round((maxX - minX) * unit)}, ${Math.round((maxY - minY) * unit)})`;
+    // (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${Math.round((maxX - minX) * unit)}, ${Math.round((maxY - minY) * unit)})`;
+    (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${(maxX - minX) * unit}, ${(maxY - minY) * unit})`;
 }
 
 const trunc = (x: number): number => {
     return Math.round(x * 10000000000) / 10000000000;
 }
+
 const setXy = (x: number, y: number): void => {
     (document.getElementById('xy') as HTMLSpanElement).innerHTML = `(${trunc(minX + x / unit)}, ${trunc(maxY - y / unit)})`;
 }
@@ -31,7 +40,7 @@ const centerTo = (canvasX: number, canvasY: number): void => {
     (document.getElementById('max-x') as HTMLInputElement).value = `${trunc(maxX)}`;
     (document.getElementById('min-y') as HTMLInputElement).value = `${trunc(minY)}`;
     (document.getElementById('max-y') as HTMLInputElement).value = `${trunc(maxY)}`;
-    setView(); // test
+    setView();
 }
 
 const expand = (factor: number): void => {
@@ -47,18 +56,14 @@ const expand = (factor: number): void => {
     (document.getElementById('max-x') as HTMLInputElement).value = `${trunc(maxX)}`;
     (document.getElementById('min-y') as HTMLInputElement).value = `${trunc(minY)}`;
     (document.getElementById('max-y') as HTMLInputElement).value = `${trunc(maxY)}`;
-    setView(); // test
+    setView();
 }
 
 let worker: Worker | null = null;
 let interval: number;
 let image: ImageData;
-let color: string;
 
-// color: 'rgb' | 'hsv' | undefined
-const display = (colorModel: string | undefined = undefined): void => {
-    if (colorModel != undefined)
-        color = colorModel;
+const showImage = (): void => {
     if (worker != null)
         return;
     worker = new Worker("./js/worker.js", { type: 'module' });
@@ -72,7 +77,6 @@ const display = (colorModel: string | undefined = undefined): void => {
     let height = Math.round((maxY - minY) * unit);
     canvas.width = width;
     canvas.height = height;
-    // let image: ImageData = context.createImageData(width, height);
     image = context.createImageData(width, height);
     let pos = 0;
     worker.onmessage = (ev) => {
@@ -82,7 +86,7 @@ const display = (colorModel: string | undefined = undefined): void => {
         if (pos == 4 * width * height)
             stopDisplay();
     }
-    worker.postMessage({ width: width, height: height, minX: minX, maxY: maxY, unit: unit, iter: iter, color: color });
+    worker.postMessage({ width: width, height: height, minX: minX, maxY: maxY, unit: unit, iter: iter, coloring: coloring });
 
     let timeCount = 0;
     interval = setInterval(() => {
