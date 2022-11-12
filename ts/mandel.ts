@@ -15,8 +15,8 @@ const setView = (): void => {
     maxX = parseFloat((document.getElementById('max-x') as HTMLInputElement).value);
     minY = parseFloat((document.getElementById('min-y') as HTMLInputElement).value);
     maxY = parseFloat((document.getElementById('max-y') as HTMLInputElement).value);
-    // (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${Math.round((maxX - minX) * unit)}, ${Math.round((maxY - minY) * unit)})`;
-    (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${(maxX - minX) * unit}, ${(maxY - minY) * unit})`;
+    (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${Math.round((maxX - minX) * unit)}, ${Math.round((maxY - minY) * unit)})`;
+    // (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${(maxX - minX) * unit}, ${(maxY - minY) * unit})`;
 }
 
 const trunc = (x: number): number => {
