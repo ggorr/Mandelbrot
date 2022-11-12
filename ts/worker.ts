@@ -45,12 +45,12 @@ const rgb1 = (depth: number, row: Uint8Array, pos: number): void => {
 }
 
 const rgb2 = (depth: number, row: Uint8Array, pos: number): void => {
-    [row[pos++], row[pos++], row[pos++]] = split(rev24bit(depth));
+    [row[pos++], row[pos++], row[pos++]] = revSplit(depth);
     row[pos] = 255;
 }
 
 const rgb3 = (depth: number, row: Uint8Array, pos: number): void => {
-    [row[pos++], row[pos++], row[pos++]] = shuffle(rev24bit(depth)).map(v => 255 - Math.sqrt(v/255)*255);
+    [row[pos++], row[pos++], row[pos++]] = revShuffle(depth).map(v => 255 - Math.sqrt(v / 255) * 255);
     row[pos] = 255;
 }
 
@@ -67,14 +67,38 @@ const hsv1 = (depth: number, row: Uint8Array, pos: number): void => {
 }
 
 const hsv2 = (depth: number, row: Uint8Array, pos: number): void => {
-    let [s, h, v] = split(rev24bit(depth));
+    let [s, h, v] = revSplit(depth);
     [row[pos++], row[pos++], row[pos++]] = hsv2Rgb(pol2(h), pol2(s), pol2(v));
     row[pos] = 255;
 }
 
 const hsv3 = (depth: number, row: Uint8Array, pos: number): void => {
-    let [s, h, v] = shuffle(rev24bit(depth));
+    let [s, h, v] = revShuffle(depth);
     [row[pos++], row[pos++], row[pos++]] = hsv2Rgb(pol2(h), pol2(s), pol2(v));
+    row[pos] = 255;
+}
+
+const hsl0 = (depth: number, row: Uint8Array, pos: number): void => {
+    let [l, h, s] = split(depth);
+    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
+    row[pos] = 255;
+}
+
+const hsl1 = (depth: number, row: Uint8Array, pos: number): void => {
+    let [l, h, s] = shuffle(depth);
+    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
+    row[pos] = 255;
+}
+
+const hsl2 = (depth: number, row: Uint8Array, pos: number): void => {
+    let [l, h, s] = revSplit(depth);
+    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
+    row[pos] = 255;
+}
+
+const hsl3 = (depth: number, row: Uint8Array, pos: number): void => {
+    let [s, h, l] = revShuffle(depth);
+    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol2(h), pol2(s), pol2(l));
     row[pos] = 255;
 }
 
@@ -97,33 +121,8 @@ const hsv2Rgb = (h: number, s: number, v: number): number[] => {
     return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 };
 
-const hsl0 = (depth: number, row: Uint8Array, pos: number): void => {
-    let [l, h, s] = split(depth);
-    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
-    row[pos] = 255;
-}
-
-const hsl1 = (depth: number, row: Uint8Array, pos: number): void => {
-    let [l, h, s] = shuffle(depth);
-    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
-    row[pos] = 255;
-}
-
-const hsl2 = (depth: number, row: Uint8Array, pos: number): void => {
-    let [l, h, s] = split(rev24bit(depth));
-    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
-    row[pos] = 255;
-}
-
-const hsl3 = (depth: number, row: Uint8Array, pos: number): void => {
-    let [s, h, l] = shuffle(rev24bit(depth));
-    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol2(h), pol2(s), pol2(l));
-    row[pos] = 255;
-}
-
 const hsl2Rgb = (h: number, s: number, l: number): number[] => {
     let r, g, b;
-
     if (s == 0) {
         r = g = b = l; // achromatic
     } else {
@@ -150,25 +149,39 @@ const split = (x: number): number[] => {
 }
 
 const shuffle = (x: number): number[] => {
-    return [
-        ((x >> 4) & 0xF) | ((x << 4) & 0xF0),
-        ((x >> 12) & 0xF) | ((x >> 4) & 0xF0),
-        ((x >> 20) & 0xF) | ((x >> 12) & 0xF0)
-    ];
+    x = ((x & 0xF0F0F) << 4) | ((x >> 4) & 0xF0F0F);
+    return [x & 0xFF, (x >> 8) & 0xFF, (x >> 16) & 0xFF];
+}
+
+const revSplit = (x: number): number[] => {
+    x = ((x & 0xFFFF) << 16) | ((x >> 16) & 0xFFFF);
+    x = ((x & 0xFF00FF) << 8) | ((x >> 8) & 0xFF00FF);
+    x = ((x & 0xF0F0F0F) << 4) | ((x >> 4) & 0xF0F0F0F);
+    x = ((x & 0x33333333) << 2) | ((x >> 2) & 0x33333333);
+    x = (((x & 0x55555555) << 1) | ((x >> 1) & 0x55555555)) >>> 8;
+    return [x & 0xFF, (x >> 8) & 0xFF, (x >> 16) & 0xFF];
+}
+
+const revShuffle = (x: number): number[] => {
+    x = ((x & 0xFFFF) << 16) | ((x >> 16) & 0xFFFF);
+    x = ((x & 0xFF00FF) << 8) | ((x >> 8) & 0xFF00FF);
+    x = ((x & 0xF0F0F0F) << 4) | ((x >> 4) & 0xF0F0F0F);
+    x = (((x & 0x33333333) << 2) | ((x >> 2) & 0x33333333)) >>> 8;
+    return [x & 0xFF, (x >> 8) & 0xFF, (x >> 16) & 0xFF];
 }
 
 const rev8bit = (x: number): number => {           // 0123 4567
-    x = ((x >> 4) & 0xF) | ((x & 0xF) << 4);       // 4567 0123
-    x = ((x >> 2) & 0x33) | ((x & 0x33) << 2);     // 6745 2301
-    return ((x >> 1) & 0x55) | ((x & 0x55) << 1);  // 7654 3210
+    x = ((x & 0xF) << 4) | ((x >> 20) & 0xF);      // 4567 0123
+    x = ((x & 0x33) << 2) | ((x >> 2) & 0x33);     // 6745 2301
+    return ((x & 0x55) << 1) | ((x >> 1) & 0x55);  // 7654 3210
 }
 
 const rev24bit = (x: number): number => {
-    x = ((x >> 16) & 0xFFFF) | ((x & 0xFFFF) << 16);
-    x = ((x >> 8) & 0xFF00FF) | ((x & 0xFF00FF) << 8);
-    x = ((x >> 4) & 0xF0F0F0F) | ((x & 0xF0F0F0F) << 4);
-    x = ((x >> 2) & 0x33333333) | ((x & 0x33333333) << 2);
-    x = ((x >> 1) & 0x55555555) | ((x & 0x55555555) << 1);
+    x = ((x & 0xFFFF) << 16) | ((x >> 16) & 0xFFFF);
+    x = ((x & 0xFF00FF) << 8) | ((x >> 8) & 0xFF00FF);
+    x = ((x & 0xF0F0F0F) << 4) | ((x >> 4) & 0xF0F0F0F);
+    x = ((x & 0x33333333) << 2) | ((x >> 2) & 0x33333333);
+    x = ((x & 0x55555555) << 1) | ((x >> 1) & 0x55555555);
     return x >>> 8;
 }
 
