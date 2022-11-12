@@ -1,12 +1,19 @@
 import toPng from './png/png.js';
-let unit, minX, maxX, minY, maxY;
+let unit, minX, maxX, minY, maxY, coloring;
+const display = () => {
+    setView();
+    let radios = ['rgb0', 'rgb1', 'rgb2', 'rgb3', 'hsv0', 'hsv1', 'hsv2', 'hsv3', 'hsl0', 'hsl1', 'hsl2', 'hsl3'];
+    coloring = radios.find(v => document.getElementById(v).checked);
+    showImage();
+};
 const setView = () => {
     unit = parseFloat(document.getElementById('unit').value);
     minX = parseFloat(document.getElementById('min-x').value);
     maxX = parseFloat(document.getElementById('max-x').value);
     minY = parseFloat(document.getElementById('min-y').value);
     maxY = parseFloat(document.getElementById('max-y').value);
-    document.getElementById('view').innerHTML = `(${Math.round((maxX - minX) * unit)}, ${Math.round((maxY - minY) * unit)})`;
+    // (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${Math.round((maxX - minX) * unit)}, ${Math.round((maxY - minY) * unit)})`;
+    document.getElementById('view').innerHTML = `(${(maxX - minX) * unit}, ${(maxY - minY) * unit})`;
 };
 const trunc = (x) => {
     return Math.round(x * 10000000000) / 10000000000;
@@ -27,7 +34,7 @@ const centerTo = (canvasX, canvasY) => {
     document.getElementById('max-x').value = `${trunc(maxX)}`;
     document.getElementById('min-y').value = `${trunc(minY)}`;
     document.getElementById('max-y').value = `${trunc(maxY)}`;
-    setView(); // test
+    setView();
 };
 const expand = (factor) => {
     unit *= factor;
@@ -42,16 +49,12 @@ const expand = (factor) => {
     document.getElementById('max-x').value = `${trunc(maxX)}`;
     document.getElementById('min-y').value = `${trunc(minY)}`;
     document.getElementById('max-y').value = `${trunc(maxY)}`;
-    setView(); // test
+    setView();
 };
 let worker = null;
 let interval;
 let image;
-let color;
-// color: 'rgb' | 'hsv' | undefined
-const display = (colorModel = undefined) => {
-    if (colorModel != undefined)
-        color = colorModel;
+const showImage = () => {
     if (worker != null)
         return;
     worker = new Worker("./js/worker.js", { type: 'module' });
@@ -62,7 +65,6 @@ const display = (colorModel = undefined) => {
     let height = Math.round((maxY - minY) * unit);
     canvas.width = width;
     canvas.height = height;
-    // let image: ImageData = context.createImageData(width, height);
     image = context.createImageData(width, height);
     let pos = 0;
     worker.onmessage = (ev) => {
@@ -72,7 +74,7 @@ const display = (colorModel = undefined) => {
         if (pos == 4 * width * height)
             stopDisplay();
     };
-    worker.postMessage({ width: width, height: height, minX: minX, maxY: maxY, unit: unit, iter: iter, color: color });
+    worker.postMessage({ width: width, height: height, minX: minX, maxY: maxY, unit: unit, iter: iter, coloring: coloring });
     let timeCount = 0;
     interval = setInterval(() => {
         timeCount++;
