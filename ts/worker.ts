@@ -1,5 +1,5 @@
 onmessage = (e: MessageEvent) => {
-    let func = [rgb0, rgb1, rgb2, hsv0, hsv1, hsv2, hsl0, hsl1, hsl2].find(v => v.name == e.data.color);
+    let func = [rgb0, rgb1, rgb2, hsv0, hsv1, hsv2, hsl0, hsl1, hsl2, rgb3, hsv3, hsl3].find(v => v.name == e.data.coloring);
     if (func == undefined) return;
 
     let colorUnit = 0xFFFFFF / e.data.iter;
@@ -35,53 +35,46 @@ const mandelbrot = (u: number, v: number, iter: number): number => {
 };
 
 const rgb0 = (depth: number, row: Uint8Array, pos: number): void => {
-    row[pos++] = depth & 0xFF;
-    row[pos++] = (depth >> 8) & 0xFF;
-    row[pos++] = (depth >> 16) & 0xFF;
+    [row[pos++], row[pos++], row[pos++]] = split(depth);
     row[pos] = 255;
 }
 
 const rgb1 = (depth: number, row: Uint8Array, pos: number): void => {
-    row[pos++] = ((depth >> 4) & 0xF) | ((depth << 4) & 0xF0);
-    row[pos++] = ((depth >> 12) & 0xF) | ((depth >> 4) & 0xF0);
-    row[pos++] = ((depth >> 20) & 0xF) | ((depth >> 12) & 0xF0);
+    [row[pos++], row[pos++], row[pos++]] = shuffle(depth);
     row[pos] = 255;
 }
 
 const rgb2 = (depth: number, row: Uint8Array, pos: number): void => {
-    row[pos++] = rev8bit(depth & 0xFF);
-    row[pos++] = rev8bit((depth >> 8) & 0xFF);
-    row[pos++] = rev8bit((depth >> 16) & 0xFF);
+    [row[pos++], row[pos++], row[pos++]] = split(rev24bit(depth));
     row[pos] = 255;
 }
 
-const rev8bit = (x: number): number => {           // 0123 4567
-    x = ((x >> 4) & 0xF) | ((x & 0xF) << 4);       // 4567 0123
-    x = ((x >> 2) & 0x33) | ((x & 0x33) << 2);     // 6745 2301
-    return ((x >> 1) & 0x55) | ((x & 0x55) << 1);  // 7654 3210
+const rgb3 = (depth: number, row: Uint8Array, pos: number): void => {
+    [row[pos++], row[pos++], row[pos++]] = shuffle(rev24bit(depth)).map(v => 255 - Math.sqrt(v/255)*255);
+    row[pos] = 255;
 }
 
 const hsv0 = (depth: number, row: Uint8Array, pos: number): void => {
-    let s = depth & 0xFF;
-    let h = (depth >> 8) & 0xFF;
-    let v = (depth >> 16) & 0xFF;
-    [row[pos++], row[pos++], row[pos++]] = hsv2Rgb((1 - h / 255) ** 2, 1 - (s / 255) ** 2, (1 - v / 255) ** 2);
+    let [s, h, v] = split(depth);
+    [row[pos++], row[pos++], row[pos++]] = hsv2Rgb(pol2(h), pol2(s), pol2(v));
     row[pos] = 255;
 }
 
 const hsv1 = (depth: number, row: Uint8Array, pos: number): void => {
-    let s = ((depth >> 4) & 0xF) | ((depth << 4) & 0xF0);
-    let h = ((depth >> 12) & 0xF) | ((depth >> 4) & 0xF0);
-    let v = ((depth >> 20) & 0xF) | ((depth >> 12) & 0xF0);
-    [row[pos++], row[pos++], row[pos++]] = hsv2Rgb((1 - h / 255) ** 2, 1 - (s / 255) ** 2, (1 - v / 255) ** 2);
+    let [s, h, v] = shuffle(depth);
+    [row[pos++], row[pos++], row[pos++]] = hsv2Rgb(pol2(h), pol2(s), pol2(v));
     row[pos] = 255;
 }
 
 const hsv2 = (depth: number, row: Uint8Array, pos: number): void => {
-    let s = rev8bit(depth & 0xFF);
-    let h = rev8bit((depth >> 8) & 0xFF);
-    let v = rev8bit((depth >> 16) & 0xFF);
-    [row[pos++], row[pos++], row[pos++]] = hsv2Rgb((1 - h / 255) ** 2, 1 - (s / 255) ** 2, (1 - v / 255) ** 2);
+    let [s, h, v] = split(rev24bit(depth));
+    [row[pos++], row[pos++], row[pos++]] = hsv2Rgb(pol2(h), pol2(s), pol2(v));
+    row[pos] = 255;
+}
+
+const hsv3 = (depth: number, row: Uint8Array, pos: number): void => {
+    let [s, h, v] = shuffle(rev24bit(depth));
+    [row[pos++], row[pos++], row[pos++]] = hsv2Rgb(pol2(h), pol2(s), pol2(v));
     row[pos] = 255;
 }
 
@@ -105,26 +98,26 @@ const hsv2Rgb = (h: number, s: number, v: number): number[] => {
 };
 
 const hsl0 = (depth: number, row: Uint8Array, pos: number): void => {
-    let l = depth & 0xFF;
-    let h = (depth >> 8) & 0xFF;
-    let s = (depth >> 16) & 0xFF;
-    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(1 - h / 255, 1 - s / 255, 1 - l / 255);
+    let [l, h, s] = split(depth);
+    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
     row[pos] = 255;
 }
 
 const hsl1 = (depth: number, row: Uint8Array, pos: number): void => {
-    let l = ((depth >> 4) & 0xF) | ((depth << 4) & 0xF0);
-    let h = ((depth >> 12) & 0xF) | ((depth >> 4) & 0xF0);
-    let s = ((depth >> 20) & 0xF) | ((depth >> 12) & 0xF0);
-    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(1 - h / 255, 1 - s / 255, 1 - l / 255);
+    let [l, h, s] = shuffle(depth);
+    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
     row[pos] = 255;
 }
 
 const hsl2 = (depth: number, row: Uint8Array, pos: number): void => {
-    let l = rev8bit(depth & 0xFF);
-    let h = rev8bit((depth >> 8) & 0xFF);
-    let s = rev8bit((depth >> 16) & 0xFF);
-    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(1 - h / 255, 1 - s / 255, 1 - l / 255);
+    let [l, h, s] = split(rev24bit(depth));
+    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol1(h), pol1(s), pol1(l));
+    row[pos] = 255;
+}
+
+const hsl3 = (depth: number, row: Uint8Array, pos: number): void => {
+    let [s, h, l] = shuffle(rev24bit(depth));
+    [row[pos++], row[pos++], row[pos++]] = hsl2Rgb(pol2(h), pol2(s), pol2(l));
     row[pos] = 255;
 }
 
@@ -143,7 +136,6 @@ const hsl2Rgb = (h: number, s: number, l: number): number[] => {
     return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
 
-
 const hue2Rgb = (p: number, q: number, t: number): number => {
     if (t < 0) t += 1;
     else if (t > 1) t -= 1;
@@ -152,3 +144,34 @@ const hue2Rgb = (p: number, q: number, t: number): number => {
     if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
     return p;
 }
+
+const split = (x: number): number[] => {
+    return [x & 0xFF, (x >> 8) & 0xFF, (x >> 16) & 0xFF];
+}
+
+const shuffle = (x: number): number[] => {
+    return [
+        ((x >> 4) & 0xF) | ((x << 4) & 0xF0),
+        ((x >> 12) & 0xF) | ((x >> 4) & 0xF0),
+        ((x >> 20) & 0xF) | ((x >> 12) & 0xF0)
+    ];
+}
+
+const rev8bit = (x: number): number => {           // 0123 4567
+    x = ((x >> 4) & 0xF) | ((x & 0xF) << 4);       // 4567 0123
+    x = ((x >> 2) & 0x33) | ((x & 0x33) << 2);     // 6745 2301
+    return ((x >> 1) & 0x55) | ((x & 0x55) << 1);  // 7654 3210
+}
+
+const rev24bit = (x: number): number => {
+    x = ((x >> 16) & 0xFFFF) | ((x & 0xFFFF) << 16);
+    x = ((x >> 8) & 0xFF00FF) | ((x & 0xFF00FF) << 8);
+    x = ((x >> 4) & 0xF0F0F0F) | ((x & 0xF0F0F0F) << 4);
+    x = ((x >> 2) & 0x33333333) | ((x & 0x33333333) << 2);
+    x = ((x >> 1) & 0x55555555) | ((x & 0x55555555) << 1);
+    return x >>> 8;
+}
+
+const pol1 = (x: number) => 1 - x / 255;
+
+const pol2 = (x: number) => (1 - x / 255) ** 2;
