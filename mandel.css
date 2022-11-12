@@ -34,7 +34,7 @@ label.factor {
 }
 
 input.factor {
-    width: 100px;
+    width: 110px;
 }
 
 span.info-left {
@@ -62,6 +62,10 @@ span.comment {
 .color-model {
     font-size: 11pt;
     padding-top: 2px;
+}
+
+label.invisible {
+    display:none;
 }
 
 #display,
