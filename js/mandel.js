@@ -1,17 +1,24 @@
 import toPng from './png/png.js';
-let unit, minX, maxX, minY, maxY, coloring;
+let minX, maxX, minY, maxY, unit, iter, color;
+let entries = undefined;
 const display = () => {
     setView();
     let radios = ['rgb0', 'rgb1', 'rgb2', 'rgb3', 'hsv0', 'hsv1', 'hsv2', 'hsv3', 'hsl0', 'hsl1', 'hsl2', 'hsl3'];
-    coloring = radios.find(v => document.getElementById(v).checked);
-    showImage();
+    color = radios.find(v => document.getElementById(v).checked);
+    iter = parseInt(document.getElementById('iter').value);
+    if (entries != undefined && entries.minX == minX && entries.maxX == maxX && entries.minY == minY && entries.maxY == maxY && entries.unit == unit && entries.iter == iter)
+        showImage(false);
+    else {
+        entries = { unit: unit, minX: minX, maxX: maxX, minY: minY, maxY: maxY, iter: iter };
+        showImage(true);
+    }
 };
 const setView = () => {
-    unit = parseFloat(document.getElementById('unit').value);
     minX = parseFloat(document.getElementById('min-x').value);
     maxX = parseFloat(document.getElementById('max-x').value);
     minY = parseFloat(document.getElementById('min-y').value);
     maxY = parseFloat(document.getElementById('max-y').value);
+    unit = parseFloat(document.getElementById('unit').value);
     document.getElementById('view').innerHTML = `(${Math.round((maxX - minX) * unit)}, ${Math.round((maxY - minY) * unit)})`;
     // (document.getElementById('view') as HTMLSpanElement).innerHTML = `(${(maxX - minX) * unit}, ${(maxY - minY) * unit})`;
 };
@@ -54,27 +61,36 @@ const expand = (factor) => {
 let worker = null;
 let interval;
 let image;
-const showImage = () => {
+let depths;
+const showImage = (create) => {
     if (worker != null)
         return;
     worker = new Worker("./js/worker.js", { type: 'module' });
     let canvas = document.getElementById('canvas');
     let context = canvas.getContext('2d');
-    let iter = parseInt(document.getElementById('iter').value);
     let width = Math.round((maxX - minX) * unit);
     let height = Math.round((maxY - minY) * unit);
     canvas.width = width;
     canvas.height = height;
     image = context.createImageData(width, height);
-    let pos = 0;
-    worker.onmessage = (ev) => {
-        image.data.set(ev.data, pos);
-        context.putImageData(image, 0, 0);
-        pos += 4 * width;
-        if (pos == 4 * width * height)
+    let y = 0;
+    worker.onmessage = (e) => {
+        if (y < height) {
+            image.data.set(e.data, 4 * width * y++);
+            context.putImageData(image, 0, 0);
+        }
+        else {
+            if (e.data != null)
+                depths = e.data;
             stopDisplay();
+        }
     };
-    worker.postMessage({ width: width, height: height, minX: minX, maxY: maxY, unit: unit, iter: iter, coloring: coloring });
+    if (create) {
+        depths = [];
+        worker.postMessage({ width: width, height: height, minX: minX, maxY: maxY, unit: unit, iter: iter, color: color });
+    }
+    else
+        worker.postMessage({ depths: depths, iter: iter, color: color });
     let timeCount = 0;
     interval = setInterval(() => {
         timeCount++;
@@ -89,7 +105,6 @@ const stopDisplay = () => {
     worker = null;
 };
 const downloadPng0 = () => {
-    // download
     let canvas = document.getElementById('canvas');
     canvas.toBlob((blob) => {
         if (blob != null) {
@@ -101,7 +116,6 @@ const downloadPng0 = () => {
     }, 'image/png');
 };
 const downloadPng = (pngFilter = 'none') => {
-    // download
     let data = toPng(new Uint8Array(image.data.buffer), image.width, pngFilter);
     let blob = new Blob([data], { type: 'image/png' });
     let link = document.createElement("a");
