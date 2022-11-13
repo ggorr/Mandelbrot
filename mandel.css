@@ -27,14 +27,24 @@ h2#title {
     text-align: center;
 }
 
+label.range,
 label.factor {
     display: inline-block;
     text-align: right;
     width: 40px
 }
 
+label.expand {
+    display: inline-block;
+    text-align: right;
+    width: 70px
+}
+input.range {
+    width: 136px;
+}
+
 input.factor {
-    width: 110px;
+    width: 90px;
 }
 
 span.info-left {
@@ -42,14 +52,12 @@ span.info-left {
     display: inline-block;
     width: 40px;
     text-align: right;
-
 }
 
-span.info-right,
-span.comment {
+span.info-right {
     font-size: 9pt;
-    /* display: inline-block;
-    width: 70px; */
+    display: inline-block;
+    /*width: 70px; */
 }
 
 .container {
@@ -65,7 +73,7 @@ span.comment {
 }
 
 label.invisible {
-    display:none;
+    display: none;
 }
 
 #display,
